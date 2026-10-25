@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Checkout</h1>
+<div class="checkout-wrap">
+  <div class="order-summary">
+    <h3>Order Summary</h3>
+    {% for i in items %}
+      <div class="summary-line">
+        <span>{{ i.product.name }} × {{ i.quantity }}</span>
+        <span>${{ '%.2f'|format(i.product.price * i.quantity) }}</span>
+      </div>
+    {% endfor %}
+    <hr>
+    <div class="summary-line total"><strong>Total</strong><strong>${{ '%.2f'|format(total) }}</strong></div>
+  </div>
+
+  <form method="post" class="checkout-form">
+    <h3>Shipping Address</h3>
+    <textarea name="address" rows="5" placeholder="Street, City, ZIP, Country" required></textarea>
+    <h3>Payment</h3>
+    <p class="note">💡 Demo mode — no real payment is processed.</p>
+    <button class="btn btn-large">Place Order (${{ '%.2f'|format(total) }})</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('index') }}" class="back">← Back</a>
+<div class="product-detail">
+  <img src="{{ product.image_url }}" alt="{{ product.name }}">
+  <div class="info">
+    <h1>{{ product.name }}</h1>
+    <p class="price-lg">${{ '%.2f'|format(product.price) }}</p>
+    <p class="desc">{{ product.description }}</p>
+    <p class="stock {{ 'out' if product.stock == 0 }}">
+      {{ 'Out of stock' if product.stock == 0 else product.stock ~ ' available' }}
+    </p>
+    {% if product.stock > 0 %}
+    <form action="{{ url_for('add_to_cart', pid=product.id) }}" method="post" class="add-form">
+      <label>Quantity:
+        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+      </label>
+      <button class="btn">Add to Cart</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
