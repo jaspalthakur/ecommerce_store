@@ -4,35 +4,54 @@
 <!-- HERO BANNER (Shown when not filtering search query) -->
 {% if not q and not active_cat %}
 <div class="hero-section">
-  <div class="hero-content">
-    <div class="hero-tag">✨ Season 2026 Collection</div>
-    <h1 class="hero-title">Smart Living & Premium Gear, Simplified.</h1>
-    <p class="hero-sub">Explore hand-picked electronics, modern apparel, bestselling books, and home essentials at unbeatable values.</p>
-    <div class="hero-actions">
-      <a href="#catalog" class="btn btn-hero">Explore Collection ↓</a>
-      <span class="hero-guarantee">✓ 30-Day Money-Back Guarantee</span>
-    </div>
-  </div>
-  <div class="hero-features">
-    <div class="feature-item">
-      <div class="feat-icon">🚚</div>
-      <div>
-        <strong>Free Express Delivery</strong>
-        <p>On orders above $50</p>
+  <div class="hero-grid-2">
+    <div class="hero-content">
+      <div class="hero-tag">✨ Season 2026 Collection</div>
+      <h1 class="hero-title">Smart Living & Premium Gear, Simplified.</h1>
+      <p class="hero-sub">Explore hand-picked electronics, modern apparel, bestselling books, and home essentials at unbeatable values.</p>
+      <div class="hero-actions">
+        <a href="#catalog" class="btn btn-hero">Explore Collection ↓</a>
+        <span class="hero-guarantee">✓ 30-Day Money-Back Guarantee</span>
+      </div>
+      <div class="hero-features">
+        <div class="feature-item">
+          <div class="feat-icon">🚚</div>
+          <div>
+            <strong>Free Express Delivery</strong>
+            <p>On orders above $50</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon">🛡️</div>
+          <div>
+            <strong>Secure Payments</strong>
+            <p>100% encrypted checkout</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon">⭐</div>
+          <div>
+            <strong>Curated Quality</strong>
+            <p>Top-rated by 10,000+ customers</p>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="feature-item">
-      <div class="feat-icon">🛡️</div>
-      <div>
-        <strong>Secure Payments</strong>
-        <p>100% encrypted checkout</p>
-      </div>
-    </div>
-    <div class="feature-item">
-      <div class="feat-icon">⭐</div>
-      <div>
-        <strong>Curated Quality</strong>
-        <p>Top-rated by 10,000+ customers</p>
+
+    <!-- HERO PRODUCT SHOWCASE PICTURE -->
+    <div class="hero-showcase">
+      <div class="hero-card-floating">
+        <span class="hero-badge-top">🔥 Featured Deal</span>
+        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80" alt="Wireless Studio Headphones" class="hero-card-img">
+        <div class="hero-card-details">
+          <div class="hero-card-title">Studio Wireless Headphones</div>
+          <div class="hero-card-price">
+            <span class="curr">$89.99</span>
+            <span class="orig">$119.99</span>
+            <span class="save">Save $30</span>
+          </div>
+          <a href="/product/1" class="btn btn-primary-sm w-100" style="text-align: center; display: block; margin-top: 10px;">View Spotlight Deal →</a>
+        </div>
       </div>
     </div>
   </div>

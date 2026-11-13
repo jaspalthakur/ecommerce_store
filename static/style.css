@@ -2868,3 +2868,101 @@ button, input, select, textarea {
   border-color: var(--border);
   color: var(--text-main);
 }
+
+
+/* ========================================================
+   HERO 2-COLUMN SHOWCASE WITH PICTURE
+   ======================================================== */
+.hero-grid-2 {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 36px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-showcase {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-card-floating {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  padding: 16px;
+  color: var(--secondary);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  max-width: 340px;
+  width: 100%;
+  position: relative;
+  transition: transform 0.3s ease;
+  animation: floatCard 4s ease-in-out infinite alternate;
+}
+@keyframes floatCard {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+.hero-badge-top {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--accent);
+  color: #0f172a;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  z-index: 3;
+}
+
+.hero-card-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+}
+
+.hero-card-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.hero-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.hero-card-price .curr {
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--primary);
+}
+.hero-card-price .orig {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+.hero-card-price .save {
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+@media (max-width: 860px) {
+  .hero-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .hero-showcase {
+    display: none;
+  }
+}

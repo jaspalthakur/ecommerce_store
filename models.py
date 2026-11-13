@@ -70,13 +70,64 @@ class Product(db.Model):
 
     @property
     def gallery_images(self):
+        curated = {
+            1: [
+                {"label": "Front View", "url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Side Angle", "url": "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Lifestyle Context", "url": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Detail Close-up", "url": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&auto=format&fit=crop&q=80"}
+            ],
+            2: [
+                {"label": "Display View", "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Angled View", "url": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Wrist / Lifestyle", "url": "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Sensor Detail", "url": "https://images.unsplash.com/photo-1510017803434-a899398421b3?w=800&auto=format&fit=crop&q=80"}
+            ],
+            3: [
+                {"label": "Front Lay", "url": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Folded Stack", "url": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Worn on Model", "url": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Fabric Texture", "url": "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&auto=format&fit=crop&q=80"}
+            ],
+            4: [
+                {"label": "Front View", "url": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Hanger Shot", "url": "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Street Style", "url": "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Button Stitching", "url": "https://images.unsplash.com/photo-1548883354-7622d03aca27?w=800&auto=format&fit=crop&q=80"}
+            ],
+            5: [
+                {"label": "Cover", "url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Desk Context", "url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Open Pages", "url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Detail", "url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop&q=80"}
+            ],
+            6: [
+                {"label": "Cover", "url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Stack View", "url": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Reading Shot", "url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Detail", "url": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800&auto=format&fit=crop&q=80"}
+            ],
+            7: [
+                {"label": "Studio View", "url": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Coffee Pour", "url": "https://images.unsplash.com/photo-1577937927133-66ef06acdf18?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Set of 4", "url": "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Glaze Detail", "url": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=800&auto=format&fit=crop&q=80"}
+            ],
+            8: [
+                {"label": "Jar View", "url": "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Lit Flame", "url": "https://images.unsplash.com/photo-1572726728685-1128675171b0?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Home Decor", "url": "https://images.unsplash.com/photo-1602874801007-bd458bb1b8b8?w=800&auto=format&fit=crop&q=80"},
+                {"label": "Wick Detail", "url": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=800&auto=format&fit=crop&q=80"}
+            ]
+        }
+        if self.id in curated:
+            return curated[self.id]
         if not self.image_url:
             return []
         return [
-            {"label": "Front View", "url": self.image_url},
-            {"label": "Angle Shot", "url": f"{self.image_url}?v=1"},
-            {"label": "Lifestyle", "url": f"{self.image_url}?v=2"},
-            {"label": "Close-up", "url": f"{self.image_url}?v=3"}
+            {"label": "Main Photo", "url": self.image_url},
+            {"label": "Angle 1", "url": f"{self.image_url}&angle=1"},
+            {"label": "Angle 2", "url": f"{self.image_url}&angle=2"}
         ]
 
 
