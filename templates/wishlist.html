@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="cart-header-row">
+  <div>
+    <h1>My Wishlist ❤️</h1>
+    <p class="catalog-count">{{ items|length }} item{{ 's' if items|length != 1 else '' }} saved for later</p>
+  </div>
+</div>
+
+{% if items %}
+<div class="grid">
+  {% for it in items %}
+  {% set p = it.product %}
+  <div class="card">
+    <div class="card-img-wrap">
+      <a href="{{ url_for('product_detail', pid=p.id) }}">
+        <img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy">
+      </a>
+      {% if p.category %}
+        <span class="card-cat-badge">{{ p.category.name }}</span>
+      {% endif %}
+      <!-- TOGGLE WISHLIST FORM -->
+      <form action="{{ url_for('toggle_wishlist', pid=p.id) }}" method="post" class="wishlist-btn-form">
+        <button type="submit" class="card-wishlist-btn active" title="Remove from wishlist">
+          ❤️
+        </button>
+      </form>
+    </div>
+
+    <div class="card-body">
+      <div class="card-meta">
+        <div class="rating-stars">
+          ★ <span class="rating-score">{{ p.rating }}</span>
+          <span class="review-count">({{ p.review_count }})</span>
+        </div>
+        {% if p.stock == 0 %}
+          <span class="stock-pill stock-out">Sold Out</span>
+        {% elif p.stock <= 5 %}
+          <span class="stock-pill stock-low">Only {{ p.stock }} left</span>
+        {% else %}
+          <span class="stock-pill stock-in">In Stock</span>
+        {% endif %}
+      </div>
+
+      <h3 class="card-title">
+        <a href="{{ url_for('product_detail', pid=p.id) }}">{{ p.name }}</a>
+      </h3>
+
+      <div class="card-price-row">
+        <span class="price-current">${{ '%.2f'|format(p.price) }}</span>
+        <span class="price-original">${{ '%.2f'|format(p.original_price) }}</span>
+      </div>
+
+      <div class="wishlist-actions">
+        {% if p.stock > 0 %}
+          <form action="{{ url_for('wishlist_move_to_cart', pid=p.id) }}" method="post" class="w-100">
+            <button type="submit" class="btn btn-add-cart w-100">
+              🛒 Move to Cart
+            </button>
+          </form>
+        {% else %}
+          <button class="btn btn-disabled w-100" disabled>Out of Stock</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💖</div>
+    <h2>Your wishlist is empty</h2>
+    <p>Tap the heart icon on any product to save your favorite items for later.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-hero">Explore Catalog</a>
+  </div>
+{% endif %}
+
+{% endblock %}

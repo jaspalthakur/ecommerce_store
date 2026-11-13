@@ -1,22 +1,64 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>My Orders</h1>
+
+<div class="orders-header">
+  <h1>My Purchase History</h1>
+  <p>Track your past orders, delivery status, and invoices</p>
+</div>
+
+<!-- ORDER STATUS FILTER TABS -->
+<div class="order-filter-tabs">
+  <a href="{{ url_for('orders') }}" class="order-filter-pill {{ 'active' if not active_status }}">All Orders</a>
+  <a href="{{ url_for('orders', status='pending') }}" class="order-filter-pill {{ 'active' if active_status == 'pending' }}">⏳ Pending</a>
+  <a href="{{ url_for('orders', status='processing') }}" class="order-filter-pill {{ 'active' if active_status == 'processing' }}">⚙️ Processing</a>
+  <a href="{{ url_for('orders', status='shipped') }}" class="order-filter-pill {{ 'active' if active_status == 'shipped' }}">🚚 Shipped</a>
+  <a href="{{ url_for('orders', status='delivered') }}" class="order-filter-pill {{ 'active' if active_status == 'delivered' }}">✓ Delivered</a>
+</div>
+
 {% if orders %}
-<table class="cart-table">
-  <thead><tr><th>#</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
-  <tbody>
-    {% for o in orders %}
-    <tr>
-      <td>#{{ o.id }}</td>
-      <td>{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-      <td>${{ '%.2f'|format(o.total) }}</td>
-      <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
-      <td><a href="{{ url_for('order_detail', oid=o.id) }}">View</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="orders-table-wrap">
+  <table class="cart-table-modern">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Date Placed</th>
+        <th>Total Amount</th>
+        <th>Delivery Status</th>
+        <th>Items</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>{{ o.created_at.strftime('%b %d, %Y • %I:%M %p') }}</td>
+        <td><strong>${{ '%.2f'|format(o.total) }}</strong></td>
+        <td>
+          <span class="badge badge-{{ o.status }}">
+            {% if o.status == 'delivered' %}✓ Delivered
+            {% elif o.status == 'shipped' %}🚚 Shipped
+            {% elif o.status == 'processing' %}⚙️ Processing
+            {% elif o.status == 'cancelled' %}✕ Cancelled
+            {% else %}⏳ Pending{% endif %}
+          </span>
+        </td>
+        <td>{{ o.items|length }} item{{ 's' if o.items|length > 1 else '' }}</td>
+        <td>
+          <a href="{{ url_for('order_detail', oid=o.id) }}" class="btn-sm-view">View Order →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% else %}
-  <p class="empty">No orders yet.</p>
+  <div class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h2>No orders placed yet</h2>
+    <p>Once you complete a purchase, your order history and live tracking will appear here.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-hero">Start Shopping</a>
+  </div>
 {% endif %}
+
 {% endblock %}

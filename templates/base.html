@@ -3,41 +3,275 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}ShopEasy{% endblock %}</title>
+  <title>{% block title %}ShopEasy — Modern E-Commerce{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    // Immediate theme init to prevent flicker
+    const savedTheme = localStorage.getItem('shopeasy-theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
 </head>
 <body>
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="top-banner">
+    <div class="top-banner-content">
+      <span>🚀 <strong>Special Offer:</strong> Use code <code>WELCOME10</code> for 10% OFF | Free shipping on orders over $50!</span>
+    </div>
+  </div>
+
+  <!-- NAVIGATION BAR -->
   <nav class="navbar">
-    <a href="{{ url_for('index') }}" class="logo">🛍️ ShopEasy</a>
-    <form class="search" action="{{ url_for('index') }}" method="get">
-      <input type="text" name="q" placeholder="Search products..." value="{{ q or '' }}">
-      <button type="submit">🔍</button>
-    </form>
-    <div class="nav-links">
-      <a href="{{ url_for('cart') }}">🛒 Cart ({{ cart_count }})</a>
-      {% if current_user.is_authenticated %}
-        <a href="{{ url_for('orders') }}">Orders</a>
-        {% if current_user.is_admin %}<a href="{{ url_for('admin') }}">Admin</a>{% endif %}
-        <span class="user">Hi, {{ current_user.name }}</span>
-        <a href="{{ url_for('logout') }}">Logout</a>
-      {% else %}
-        <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('register') }}" class="btn-small">Register</a>
-      {% endif %}
+    <div class="nav-container">
+      <a href="{{ url_for('index') }}" class="logo">
+        <span class="logo-icon">🛍️</span>
+        <span class="logo-text">Shop<span>Easy</span></span>
+      </a>
+
+      <!-- SEARCH BAR WITH LIVE INSTANT RESULTS -->
+      <div class="search-wrap">
+        <form class="search" action="{{ url_for('index') }}" method="get" id="search-form">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="live-search-input" name="q" placeholder="Search headphones, watch, books..." value="{{ q or '' }}" autocomplete="off">
+          <button type="submit">Search</button>
+        </form>
+        <div id="live-search-dropdown" class="live-search-dropdown"></div>
+      </div>
+
+      <div class="nav-links">
+        <a href="{{ url_for('index') }}" class="nav-item">Store</a>
+        
+        <!-- WISHLIST -->
+        <a href="{{ url_for('wishlist') }}" class="nav-item wishlist-btn" title="Saved items">
+          <span>❤️</span>
+          <span class="nav-item-text">Wishlist</span>
+          {% if wishlist_count > 0 %}
+            <span class="wishlist-badge">{{ wishlist_count }}</span>
+          {% endif %}
+        </a>
+
+        <!-- CART -->
+        <a href="{{ url_for('cart') }}" class="nav-item cart-btn">
+          <span class="cart-icon">🛒</span>
+          <span class="nav-item-text">Cart</span>
+          <span class="cart-badge">{{ cart_count }}</span>
+        </a>
+
+        <!-- DARK/LIGHT THEME TOGGLE -->
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Dark Mode">
+          🌓
+        </button>
+
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('orders') }}" class="nav-item">My Orders</a>
+          <a href="{{ url_for('profile') }}" class="nav-item">👤 Account</a>
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('admin') }}" class="nav-item admin-pill">⚡ Admin</a>
+          {% endif %}
+          <div class="user-dropdown">
+            <a href="{{ url_for('profile') }}" class="user-greeting" title="View profile">Hi, <strong>{{ current_user.name }}</strong></a>
+            <a href="{{ url_for('logout') }}" class="btn-outline-sm">Logout</a>
+          </div>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-item">Login</a>
+          <a href="{{ url_for('register') }}" class="btn-primary-sm">Register</a>
+        {% endif %}
+      </div>
     </div>
   </nav>
 
-  <div class="container">
+  <!-- FLASH TOAST MESSAGES -->
+  <div class="toast-container">
     {% with msgs = get_flashed_messages(with_categories=true) %}
       {% for cat, msg in msgs %}
-        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        <div class="toast toast-{{ cat }}">
+          <div class="toast-icon">
+            {% if cat == 'success' %}✓{% elif cat == 'danger' %}✕{% elif cat == 'warning' %}⚠{% else %}ℹ{% endif %}
+          </div>
+          <div class="toast-body">{{ msg }}</div>
+          <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        </div>
       {% endfor %}
     {% endwith %}
-    {% block content %}{% endblock %}
   </div>
 
-  <footer>
-    <p>© 2025 ShopEasy — Demo Store. Built with Flask.</p>
+  <!-- MAIN APP CONTAINER -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- QUICK VIEW MODAL -->
+  <div id="quick-view-modal" class="modal-backdrop" onclick="closeQuickView(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeQuickView()">×</button>
+      <div class="modal-content" id="modal-body-content">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">🛍️ Shop<span>Easy</span></div>
+        <p>Your one-stop destination for curated electronics, apparel, literature, and home essentials. Crafted for convenience and quality.</p>
+        <div class="trust-tags">
+          <span class="trust-tag">🔒 256-Bit SSL Encrypted</span>
+          <span class="trust-tag">⚡ Fast Tracked Delivery</span>
+          <span class="trust-tag">🔄 30-Day Money-Back Guarantee</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Explore Categories</h4>
+        <ul>
+          <li><a href="{{ url_for('index') }}">All Products</a></li>
+          <li><a href="{{ url_for('index', category='electronics') }}">Electronics</a></li>
+          <li><a href="{{ url_for('index', category='clothing') }}">Apparel</a></li>
+          <li><a href="{{ url_for('index', category='books') }}">Books & Media</a></li>
+          <li><a href="{{ url_for('index', category='home') }}">Home & Living</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Customer Care</h4>
+        <ul>
+          <li><a href="{{ url_for('orders') }}">Order Status & Tracking</a></li>
+          <li><a href="{{ url_for('wishlist') }}">My Wishlist</a></li>
+          <li><a href="{{ url_for('cart') }}">Shopping Bag</a></li>
+          <li><a href="#">Shipping & Returns Policy</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col newsletter-col">
+        <h4>Stay Updated</h4>
+        <p>Subscribe for exclusive product drops, promo codes, and tech updates.</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing to ShopEasy updates!'); this.reset();">
+          <input type="email" placeholder="Enter your email" required>
+          <button type="submit">Join</button>
+        </form>
+        <div class="payment-badges">
+          <span class="pay-badge">💳 VISA</span>
+          <span class="pay-badge">💳 Mastercard</span>
+          <span class="pay-badge"> Apple Pay</span>
+          <span class="pay-badge">🅿 PayPal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 ShopEasy Store. Built with Flask, SQLite & Modern UI design.</p>
+    </div>
   </footer>
+
+  <script>
+    // Auto-dismiss toasts after 5 seconds
+    setTimeout(() => {
+      document.querySelectorAll('.toast').forEach(t => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(-10px)';
+        setTimeout(() => t.remove(), 400);
+      });
+    }, 5000);
+
+    // Dark/Light Mode Switcher
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    themeToggleBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const nextTheme = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('shopeasy-theme', nextTheme);
+    });
+
+    // Live Instant Search Dropdown
+    const searchInput = document.getElementById('live-search-input');
+    const searchDropdown = document.getElementById('live-search-dropdown');
+    let searchDebounce = null;
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchDebounce);
+        const query = e.target.value.trim();
+        if (query.length < 2) {
+          searchDropdown.style.display = 'none';
+          searchDropdown.innerHTML = '';
+          return;
+        }
+
+        searchDebounce = setTimeout(async () => {
+          try {
+            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (data.length > 0) {
+              searchDropdown.innerHTML = data.map(item => `
+                <a href="/product/${item.id}" class="search-drop-item">
+                  <img src="${item.image_url}" alt="${item.name}" class="search-drop-thumb">
+                  <div class="search-drop-info">
+                    <strong class="search-drop-name">${item.name}</strong>
+                    <span class="search-drop-cat">${item.category || 'Product'}</span>
+                  </div>
+                  <span class="search-drop-price">$${item.price.toFixed(2)}</span>
+                </a>
+              `).join('');
+              searchDropdown.style.display = 'block';
+            } else {
+              searchDropdown.innerHTML = `<div class="search-drop-empty">No products found for "${query}"</div>`;
+              searchDropdown.style.display = 'block';
+            }
+          } catch (err) {
+            console.error('Search error:', err);
+          }
+        }, 220);
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+          searchDropdown.style.display = 'none';
+        }
+      });
+    }
+
+    // Quick View Modal
+    function openQuickView(product) {
+      const modal = document.getElementById('quick-view-modal');
+      const content = document.getElementById('modal-body-content');
+      content.innerHTML = `
+        <div class="modal-product-view">
+          <div class="modal-img-wrap">
+            <img src="${product.imageUrl}" alt="${product.name}">
+          </div>
+          <div class="modal-info-wrap">
+            <span class="modal-cat">${product.category || 'Product'}</span>
+            <h2 class="modal-title">${product.name}</h2>
+            <div class="modal-rating">★ <strong>${product.rating}</strong> (${product.reviews} reviews)</div>
+            <div class="modal-price">$${parseFloat(product.price).toFixed(2)}</div>
+            <p class="modal-desc">${product.desc}</p>
+            <div class="modal-stock-line">
+              ${product.stock > 0 ? `<span class="stock-pill stock-in">✓ ${product.stock} in stock</span>` : `<span class="stock-pill stock-out">Out of stock</span>`}
+            </div>
+            ${product.stock > 0 ? `
+              <form action="/cart/add/${product.id}" method="post" class="modal-action-form">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-add-cart w-100">🛒 Add to Cart Now</button>
+              </form>
+            ` : ''}
+            <a href="/product/${product.id}" class="modal-view-full">View Complete Details →</a>
+          </div>
+        </div>
+      `;
+      modal.classList.add('active');
+    }
+
+    function closeQuickView() {
+      const modal = document.getElementById('quick-view-modal');
+      modal.classList.remove('active');
+    }
+  </script>
 </body>
 </html>

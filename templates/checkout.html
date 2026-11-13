@@ -1,25 +1,150 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Checkout</h1>
-<div class="checkout-wrap">
-  <div class="order-summary">
-    <h3>Order Summary</h3>
-    {% for i in items %}
-      <div class="summary-line">
-        <span>{{ i.product.name }} × {{ i.quantity }}</span>
-        <span>${{ '%.2f'|format(i.product.price * i.quantity) }}</span>
+
+<div class="checkout-page-header">
+  <a href="{{ url_for('cart') }}" class="back-link">← Return to Cart</a>
+  <h1>Complete Your Order</h1>
+</div>
+
+<div class="checkout-layout">
+  <!-- LEFT: FORMS -->
+  <div class="checkout-main-pane">
+    <form method="post" id="checkout-form" class="checkout-form-modern">
+      
+      <!-- SHIPPING SECTION -->
+      <div class="form-section-card">
+        <div class="section-title-row">
+          <span class="step-num">1</span>
+          <h3>Shipping Address</h3>
+        </div>
+        <p class="section-sub">Where should we deliver your order?</p>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="address">Full Street Address</label>
+            <textarea id="address" name="address" rows="3" placeholder="e.g. 742 Evergreen Terrace, Apt 4B, Springfield, OR 97477" required>{{ default_address }}</textarea>
+            {% if default_address %}
+              <small class="text-muted" style="font-size: 0.78rem;">✓ Pre-filled from your saved profile address (<a href="{{ url_for('profile') }}">Edit</a>)</small>
+            {% endif %}
+          </div>
+        </div>
       </div>
-    {% endfor %}
-    <hr>
-    <div class="summary-line total"><strong>Total</strong><strong>${{ '%.2f'|format(total) }}</strong></div>
+
+      <!-- PAYMENT METHOD SECTION -->
+      <div class="form-section-card">
+        <div class="section-title-row">
+          <span class="step-num">2</span>
+          <h3>Payment Method</h3>
+        </div>
+        <p class="section-sub">Select your preferred payment option</p>
+
+        <div class="payment-tabs">
+          <label class="pay-tab active">
+            <input type="radio" name="payment_method" value="card" checked>
+            <span class="pay-tab-content">
+              <strong>💳 Credit / Debit Card</strong>
+              <small>Visa, Mastercard, Amex</small>
+            </span>
+          </label>
+          <label class="pay-tab">
+            <input type="radio" name="payment_method" value="paypal">
+            <span class="pay-tab-content">
+              <strong>🅿 PayPal</strong>
+              <small>Fast checkout</small>
+            </span>
+          </label>
+          <label class="pay-tab">
+            <input type="radio" name="payment_method" value="cod">
+            <span class="pay-tab-content">
+              <strong>📦 Cash on Delivery</strong>
+              <small>Pay upon receipt</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="card-mock-inputs" id="card-fields">
+          <div class="form-group full-width">
+            <label>Card Number</label>
+            <input type="text" placeholder="•••• •••• •••• 4242" value="4242 •••• •••• 4242">
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" placeholder="MM/YY" value="12/28">
+            </div>
+            <div class="form-group">
+              <label>Security Code (CVC)</label>
+              <input type="text" placeholder="CVC" value="888">
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-badge-note">
+          💡 <strong>Demo Mode:</strong> All orders are simulated safely. No actual bank charges will take place.
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-place-order">
+        🔒 Authorize & Place Order (${{ '%.2f'|format(totals.total) }})
+      </button>
+
+    </form>
   </div>
 
-  <form method="post" class="checkout-form">
-    <h3>Shipping Address</h3>
-    <textarea name="address" rows="5" placeholder="Street, City, ZIP, Country" required></textarea>
-    <h3>Payment</h3>
-    <p class="note">💡 Demo mode — no real payment is processed.</p>
-    <button class="btn btn-large">Place Order (${{ '%.2f'|format(total) }})</button>
-  </form>
+  <!-- RIGHT: SUMMARY -->
+  <div class="checkout-sidebar">
+    <div class="summary-card-modern">
+      <h3>Order Review ({{ items|length }})</h3>
+
+      <div class="summary-items-list">
+        {% for i in items %}
+        <div class="checkout-item-row">
+          <div class="checkout-item-thumb">
+            <img src="{{ i.product.image_url }}" alt="{{ i.product.name }}">
+            <span class="item-qty-badge">{{ i.quantity }}</span>
+          </div>
+          <div class="checkout-item-info">
+            <div class="item-name">{{ i.product.name }}</div>
+            <div class="item-sub">${{ '%.2f'|format(i.product.price) }} each</div>
+          </div>
+          <div class="item-total">
+            ${{ '%.2f'|format(i.product.price * i.quantity) }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-breakdown">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>${{ '%.2f'|format(totals.subtotal) }}</span>
+        </div>
+        {% if totals.discount > 0 %}
+        <div class="summary-row discount">
+          <span>Coupon ({{ totals.coupon }})</span>
+          <span>−${{ '%.2f'|format(totals.discount) }}</span>
+        </div>
+        {% endif %}
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span>
+            {% if totals.shipping == 0 %}
+              <strong class="free-text">FREE</strong>
+            {% else %}
+              ${{ '%.2f'|format(totals.shipping) }}
+            {% endif %}
+          </span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total-row">
+          <span>Total Due</span>
+          <span class="total-amount">${{ '%.2f'|format(totals.total) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
 {% endblock %}

@@ -1,23 +1,239 @@
 {% extends "base.html" %}
 {% block content %}
-<a href="{{ url_for('index') }}" class="back">← Back</a>
-<div class="product-detail">
-  <img src="{{ product.image_url }}" alt="{{ product.name }}">
-  <div class="info">
-    <h1>{{ product.name }}</h1>
-    <p class="price-lg">${{ '%.2f'|format(product.price) }}</p>
-    <p class="desc">{{ product.description }}</p>
-    <p class="stock {{ 'out' if product.stock == 0 }}">
-      {{ 'Out of stock' if product.stock == 0 else product.stock ~ ' available' }}
-    </p>
-    {% if product.stock > 0 %}
-    <form action="{{ url_for('add_to_cart', pid=product.id) }}" method="post" class="add-form">
-      <label>Quantity:
-        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
-      </label>
-      <button class="btn">Add to Cart</button>
-    </form>
+
+<!-- BREADCRUMBS -->
+<div class="breadcrumbs">
+  <a href="{{ url_for('index') }}">Home</a>
+  <span class="sep">/</span>
+  {% if product.category %}
+    <a href="{{ url_for('index', category=product.category.slug) }}">{{ product.category.name }}</a>
+    <span class="sep">/</span>
+  {% endif %}
+  <span class="current">{{ product.name }}</span>
+</div>
+
+<div class="product-detail-card">
+  <div class="product-gallery">
+    <div class="main-img-wrap">
+      <img id="main-product-img" src="{{ product.image_url }}" alt="{{ product.name }}">
+      {% if product.category %}
+        <span class="badge-cat-overlay">{{ product.category.name }}</span>
+      {% endif %}
+    </div>
+
+    <!-- GALLERY THUMBNAILS -->
+    {% if product.gallery_images %}
+    <div class="gallery-thumbs-row">
+      {% for img in product.gallery_images %}
+      <button type="button" class="thumb-btn {{ 'active' if loop.first else '' }}"
+              onclick="document.getElementById('main-product-img').src='{{ img.url }}'; document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">
+        <img src="{{ img.url }}" alt="{{ img.label }}">
+        <span class="thumb-tooltip">{{ img.label }}</span>
+      </button>
+      {% endfor %}
+    </div>
     {% endif %}
   </div>
+
+  <div class="product-info-pane">
+    <div class="product-header">
+      <div class="product-rating-row">
+        <span class="stars">★★★★★</span>
+        <span class="rating-num">{{ product.rating }}</span>
+        <span class="rating-reviews">({{ product.review_count }} verified reviews)</span>
+        <span class="sku">Item #SKU-{{ product.id * 142 }}</span>
+      </div>
+      <h1 class="product-title">{{ product.name }}</h1>
+    </div>
+
+    <div class="price-box">
+      <div class="price-main">${{ '%.2f'|format(product.price) }}</div>
+      <div class="price-original-wrap">
+        <span class="price-crossed">${{ '%.2f'|format(product.original_price) }}</span>
+        <span class="discount-pill">Save ${{ '%.2f'|format(product.original_price - product.price) }}</span>
+      </div>
+    </div>
+
+    <div class="product-desc-block">
+      <h3>Description</h3>
+      <p>{{ product.description }}</p>
+    </div>
+
+    <div class="stock-status-line">
+      {% if product.stock == 0 %}
+        <span class="stock-status-badge out">✕ Currently Out of Stock</span>
+      {% elif product.stock <= 5 %}
+        <span class="stock-status-badge low">⚠ Low Stock: Only {{ product.stock }} units remaining</span>
+      {% else %}
+        <span class="stock-status-badge in">✓ In Stock ({{ product.stock }} units available)</span>
+      {% endif %}
+    </div>
+
+    <div class="purchase-action-group">
+      {% if product.stock > 0 %}
+      <form action="{{ url_for('add_to_cart', pid=product.id) }}" method="post" class="purchase-form">
+        <div class="qty-selector">
+          <label for="qty-input">Quantity</label>
+          <div class="qty-stepper">
+            <button type="button" class="qty-btn" onclick="let q=document.getElementById('qty-input'); if(q.value>1) q.value--;">−</button>
+            <input type="number" id="qty-input" name="quantity" value="1" min="1" max="{{ product.stock }}">
+            <button type="button" class="qty-btn" onclick="let q=document.getElementById('qty-input'); if(q.value<{{ product.stock }}) q.value++;">+</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-add-large">
+          <span>🛒 Add to Cart</span>
+        </button>
+      </form>
+      {% endif %}
+
+      <!-- WISHLIST BUTTON -->
+      <form action="{{ url_for('toggle_wishlist', pid=product.id) }}" method="post">
+        <button type="submit" class="btn btn-wishlist-toggle {{ 'active' if product.id in user_wishlist_ids else '' }}">
+          <span>{{ '❤️ Saved to Wishlist' if product.id in user_wishlist_ids else '🤍 Add to Wishlist' }}</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- PERKS -->
+    <div class="perks-grid">
+      <div class="perk-box">
+        <span class="perk-icon">🚚</span>
+        <div>
+          <strong>Free Shipping</strong>
+          <small>Standard dispatch within 24h</small>
+        </div>
+      </div>
+      <div class="perk-box">
+        <span class="perk-icon">🔄</span>
+        <div>
+          <strong>30-Day Returns</strong>
+          <small>No hassle exchange or refund</small>
+        </div>
+      </div>
+      <div class="perk-box">
+        <span class="perk-icon">🛡️</span>
+        <div>
+          <strong>1-Year Warranty</strong>
+          <small>Guaranteed protection</small>
+        </div>
+      </div>
+      <div class="perk-box">
+        <span class="perk-icon">🔒</span>
+        <div>
+          <strong>Secure Checkout</strong>
+          <small>Encrypted transactions</small>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
+
+<!-- REVIEWS & RATINGS SECTION -->
+<div class="reviews-section">
+  <div class="reviews-header">
+    <div>
+      <h2>Customer Reviews & Ratings</h2>
+      <p class="section-sub-text">Verified buyer feedback and satisfaction ratings</p>
+    </div>
+    <div class="overall-rating-card">
+      <div class="overall-num">{{ product.rating }}</div>
+      <div class="overall-stars">★★★★★</div>
+      <div class="overall-count">Based on {{ product.review_count }} reviews</div>
+    </div>
+  </div>
+
+  <div class="reviews-grid">
+    <!-- SUBMIT REVIEW FORM -->
+    <div class="submit-review-card">
+      <h3>Write a Verified Review</h3>
+      {% if current_user.is_authenticated %}
+        <form action="{{ url_for('add_review', pid=product.id) }}" method="post" class="review-form">
+          <div class="form-group">
+            <label>Rating</label>
+            <div class="star-rating-select">
+              <label><input type="radio" name="rating" value="5" checked> ★★★★★ (5 Stars - Exceptional)</label>
+              <label><input type="radio" name="rating" value="4"> ★★★★☆ (4 Stars - Great)</label>
+              <label><input type="radio" name="rating" value="3"> ★★★☆☆ (3 Stars - Average)</label>
+              <label><input type="radio" name="rating" value="2"> ★★☆☆☆ (2 Stars - Below Average)</label>
+              <label><input type="radio" name="rating" value="1"> ★☆☆☆☆ (1 Star - Poor)</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="review-comment">Your Review Feedback</label>
+            <textarea id="review-comment" name="comment" rows="4" placeholder="What did you love about this item? Build quality, performance, aesthetics..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary-sm">Submit Review</button>
+        </form>
+      {% else %}
+        <div class="login-prompt-box">
+          <p>Please <a href="{{ url_for('login') }}">log in</a> to share your review with other shoppers.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- LIST OF REVIEWS -->
+    <div class="reviews-list-card">
+      <h3>Recent Customer Reviews ({{ reviews|length }})</h3>
+      {% if reviews %}
+        <div class="reviews-feed">
+          {% for rev in reviews %}
+          <div class="review-bubble">
+            <div class="review-bubble-header">
+              <div class="reviewer-avatar">{{ rev.user.name[0]|upper }}</div>
+              <div class="reviewer-meta">
+                <strong>{{ rev.user.name }}</strong>
+                <span class="verified-buyer-badge">✓ Verified Purchaser</span>
+              </div>
+              <div class="review-date">{{ rev.created_at.strftime('%b %d, %Y') }}</div>
+            </div>
+            <div class="review-stars-given">
+              {% for _ in range(rev.rating) %}★{% endfor %}
+            </div>
+            <p class="review-text">{{ rev.comment }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-reviews">
+          <p>Be the first customer to leave a review for this product!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- RELATED PRODUCTS SECTION -->
+{% if related_products %}
+<div class="related-section">
+  <div class="related-header">
+    <h2>You might also like</h2>
+    <p>Similar items from this category</p>
+  </div>
+  <div class="grid">
+    {% for rp in related_products %}
+    <div class="card">
+      <div class="card-img-wrap">
+        <a href="{{ url_for('product_detail', pid=rp.id) }}">
+          <img src="{{ rp.image_url }}" alt="{{ rp.name }}" loading="lazy">
+        </a>
+      </div>
+      <div class="card-body">
+        <h3 class="card-title">
+          <a href="{{ url_for('product_detail', pid=rp.id) }}">{{ rp.name }}</a>
+        </h3>
+        <div class="card-price-row">
+          <span class="price-current">${{ '%.2f'|format(rp.price) }}</span>
+        </div>
+        <form action="{{ url_for('add_to_cart', pid=rp.id) }}" method="post">
+          <input type="hidden" name="quantity" value="1">
+          <button class="btn btn-add-cart w-100" {{ 'disabled' if rp.stock == 0 }}>Add to Cart</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

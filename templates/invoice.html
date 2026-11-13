@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice #INV-{{ '%05d'|format(order.id) }} — ShopEasy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { background: #f1f5f9; padding: 40px 20px; }
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 48px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .invoice-actions {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .invoice-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 28px;
+      margin-bottom: 32px;
+    }
+    .invoice-brand h2 { font-size: 1.8rem; font-weight: 800; color: #0f172a; }
+    .invoice-brand p { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
+    .invoice-meta { text-align: right; }
+    .invoice-meta h3 { font-size: 1.4rem; color: #4f46e5; margin-bottom: 6px; }
+    .invoice-meta p { font-size: 0.88rem; color: #64748b; }
+    .invoice-addresses {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 36px;
+    }
+    .addr-box h4 { font-size: 0.82rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px; }
+    .addr-box p { font-size: 0.95rem; line-height: 1.5; color: #1e293b; }
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 28px;
+    }
+    .invoice-table th {
+      background: #f8fafc;
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #64748b;
+      text-transform: uppercase;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .invoice-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.92rem;
+    }
+    .invoice-totals {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-box {
+      width: 300px;
+    }
+    .totals-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 0.92rem;
+      color: #64748b;
+    }
+    .totals-row.grand {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 14px;
+      margin-top: 6px;
+    }
+    .invoice-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 28px;
+      margin-top: 40px;
+      text-align: center;
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .invoice-container { box-shadow: none; padding: 0; }
+      .invoice-actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="invoice-actions">
+    <a href="{{ url_for('order_detail', oid=order.id) }}" class="back-link">← Return to Order Details</a>
+    <button onclick="window.print()" class="btn btn-primary-sm">🖨️ Print Invoice</button>
+  </div>
+
+  <div class="invoice-container">
+    <div class="invoice-top">
+      <div class="invoice-brand">
+        <h2>🛍️ Shop<span>Easy</span></h2>
+        <p>Official Purchase Receipt & Tax Invoice</p>
+        <p>support@shopeasy.com • https://shopeasy.store</p>
+      </div>
+      <div class="invoice-meta">
+        <h3>INVOICE</h3>
+        <p><strong>Invoice #:</strong> INV-{{ '%05d'|format(order.id) }}</p>
+        <p><strong>Order ID:</strong> #{{ order.id }}</p>
+        <p><strong>Date:</strong> {{ order.created_at.strftime('%B %d, %Y') }}</p>
+        <p><strong>Status:</strong> <span class="badge badge-{{ order.status }}">{{ order.status }}</span></p>
+      </div>
+    </div>
+
+    <div class="invoice-addresses">
+      <div class="addr-box">
+        <h4>Billed & Shipped To:</h4>
+        <p><strong>{{ order.user.name }}</strong></p>
+        <p>{{ order.user.email }}</p>
+        <p style="white-space: pre-line; margin-top: 6px;">{{ order.shipping_address }}</p>
+      </div>
+      <div class="addr-box">
+        <h4>Payment Info:</h4>
+        <p><strong>Method:</strong> Encrypted Online Checkout (Demo Mode)</p>
+        <p><strong>Currency:</strong> USD ($)</p>
+        <p><strong>Payment Status:</strong> Paid in Full</p>
+      </div>
+    </div>
+
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th style="text-align: right;">Price</th>
+          <th style="text-align: center;">Qty</th>
+          <th style="text-align: right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in order.items %}
+        <tr>
+          <td><strong>{{ it.product_name }}</strong></td>
+          <td style="text-align: right;">${{ '%.2f'|format(it.price) }}</td>
+          <td style="text-align: center;">{{ it.quantity }}</td>
+          <td style="text-align: right;">${{ '%.2f'|format(it.price * it.quantity) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="invoice-totals">
+      <div class="totals-box">
+        <div class="totals-row">
+          <span>Subtotal:</span>
+          <span>${{ '%.2f'|format(order.total) }}</span>
+        </div>
+        <div class="totals-row">
+          <span>Shipping & Handling:</span>
+          <span>FREE</span>
+        </div>
+        <div class="totals-row">
+          <span>Estimated Tax:</span>
+          <span>$0.00</span>
+        </div>
+        <div class="totals-row grand">
+          <span>Grand Total:</span>
+          <span style="color: #4f46e5;">${{ '%.2f'|format(order.total) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="invoice-footer">
+      <p>Thank you for choosing ShopEasy! If you have any inquiries regarding this order, please contact our 24/7 support.</p>
+    </div>
+  </div>
+
+</body>
+</html>

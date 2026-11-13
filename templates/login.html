@@ -1,13 +1,52 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="auth-box">
-  <h1>Login</h1>
-  <form method="post">
-    <label>Email<input type="email" name="email" required></label>
-    <label>Password<input type="password" name="password" required></label>
-    <button class="btn btn-large">Login</button>
-  </form>
-  <p>No account? <a href="{{ url_for('register') }}">Register here</a></p>
-  <p class="hint">Demo: <b>user@store.com</b> / <b>user123</b></p>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon">🔐</div>
+      <h2>Welcome Back</h2>
+      <p>Log in to your ShopEasy account</p>
+    </div>
+
+    <form method="post" class="auth-form" id="login-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn btn-hero w-100">Sign In to Account</button>
+    </form>
+
+    <div class="auth-footer-links">
+      <p>Don't have an account yet? <a href="{{ url_for('register') }}">Create an account</a></p>
+    </div>
+
+    <div class="demo-fill-box">
+      <div class="demo-fill-title">⚡ Instant Demo Login:</div>
+      <div class="demo-buttons">
+        <button type="button" class="btn-demo-pill" onclick="fillCreds('user@store.com', 'user123')">
+          👤 Demo Customer
+        </button>
+        <button type="button" class="btn-demo-pill" onclick="fillCreds('admin@store.com', 'admin123')">
+          ⚡ Demo Admin
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  function fillCreds(email, pass) {
+    document.getElementById('email').value = email;
+    document.getElementById('password').value = pass;
+    document.getElementById('login-form').submit();
+  }
+</script>
+
 {% endblock %}

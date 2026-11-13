@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="profile-header-row">
+  <div>
+    <h1>My Account & Profile</h1>
+    <p class="section-sub-text">Manage your personal information, address book, and order statistics</p>
+  </div>
+</div>
+
+<div class="profile-layout-grid">
+  <!-- LEFT: METRICS & STATS -->
+  <div class="profile-sidebar-card">
+    <div class="profile-avatar-circle">
+      {{ current_user.name[0]|upper }}
+    </div>
+    <h3 class="profile-name">{{ current_user.name }}</h3>
+    <p class="profile-email">{{ current_user.email }}</p>
+    {% if current_user.is_admin %}
+      <span class="badge badge-lg badge-processing" style="margin-top: 8px;">⚡ Store Administrator</span>
+    {% endif %}
+
+    <div class="profile-stats-list">
+      <div class="p-stat-box">
+        <span class="p-stat-label">Total Orders</span>
+        <strong class="p-stat-num">{{ current_user.orders|length }}</strong>
+      </div>
+      <div class="p-stat-box">
+        <span class="p-stat-label">Lifetime Spend</span>
+        <strong class="p-stat-num">${{ '%.2f'|format(current_user.total_spent) }}</strong>
+      </div>
+      <div class="p-stat-box">
+        <span class="p-stat-label">Wishlist Items</span>
+        <strong class="p-stat-num">{{ wishlist_count }}</strong>
+      </div>
+      <div class="p-stat-box">
+        <span class="p-stat-label">Member Since</span>
+        <strong class="p-stat-date">{{ current_user.created_at.strftime('%b %Y') }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: EDITABLE PROFILE FORM -->
+  <div class="profile-main-card">
+    <div class="panel-header">
+      <h3>Personal Details & Default Shipping</h3>
+      <small class="text-muted">Keep your contact and shipping information up-to-date for fast 1-click checkout</small>
+    </div>
+
+    <form method="post" class="profile-form-modern">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="prof-name">Full Name</label>
+          <input type="text" id="prof-name" name="name" value="{{ current_user.name }}" required>
+        </div>
+        <div class="form-group">
+          <label for="prof-email">Email Address</label>
+          <input type="email" id="prof-email" value="{{ current_user.email }}" disabled style="background: #f1f5f9; cursor: not-allowed;">
+          <small class="text-muted" style="font-size: 0.72rem;">Email cannot be changed.</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="prof-phone">Phone Number (Optional)</label>
+        <input type="tel" id="prof-phone" name="phone" placeholder="+1 (555) 000-1234" value="{{ current_user.phone or '' }}">
+      </div>
+
+      <div class="form-group">
+        <label for="prof-address">Default Shipping Address</label>
+        <textarea id="prof-address" name="default_address" rows="4" placeholder="Street, Apartment/Suite, City, State/Province, ZIP, Country">{{ current_user.default_address or '' }}</textarea>
+        <small class="text-muted" style="font-size: 0.78rem;">This address will automatically pre-fill during your checkout.</small>
+      </div>
+
+      <div class="form-actions-bar">
+        <button type="submit" class="btn btn-hero">Save Profile Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

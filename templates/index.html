@@ -1,36 +1,196 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Products</h1>
 
+<!-- HERO BANNER (Shown when not filtering search query) -->
+{% if not q and not active_cat %}
+<div class="hero-section">
+  <div class="hero-content">
+    <div class="hero-tag">✨ Season 2026 Collection</div>
+    <h1 class="hero-title">Smart Living & Premium Gear, Simplified.</h1>
+    <p class="hero-sub">Explore hand-picked electronics, modern apparel, bestselling books, and home essentials at unbeatable values.</p>
+    <div class="hero-actions">
+      <a href="#catalog" class="btn btn-hero">Explore Collection ↓</a>
+      <span class="hero-guarantee">✓ 30-Day Money-Back Guarantee</span>
+    </div>
+  </div>
+  <div class="hero-features">
+    <div class="feature-item">
+      <div class="feat-icon">🚚</div>
+      <div>
+        <strong>Free Express Delivery</strong>
+        <p>On orders above $50</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">🛡️</div>
+      <div>
+        <strong>Secure Payments</strong>
+        <p>100% encrypted checkout</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">⭐</div>
+      <div>
+        <strong>Curated Quality</strong>
+        <p>Top-rated by 10,000+ customers</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div id="catalog" class="catalog-header">
+  <div>
+    <h2>
+      {% if active_cat %}
+        Category: <span class="highlight-text">{{ active_cat|capitalize }}</span>
+      {% elif q %}
+        Search results for "<span class="highlight-text">{{ q }}</span>"
+      {% else %}
+        Featured Products
+      {% endif %}
+    </h2>
+    <p class="catalog-count">{{ products|length }} items available</p>
+  </div>
+
+  <!-- SORTING & FILTERING CONTROLS -->
+  <div class="controls-bar">
+    <form method="get" class="sort-form">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      {% if active_cat %}<input type="hidden" name="category" value="{{ active_cat }}">{% endif %}
+      
+      <!-- PRICE FILTER -->
+      <select name="max_price" onchange="this.form.submit()" class="filter-select">
+        <option value="">Any Price</option>
+        <option value="30" {{ 'selected' if max_price == '30' }}>Under $30</option>
+        <option value="50" {{ 'selected' if max_price == '50' }}>Under $50</option>
+        <option value="100" {{ 'selected' if max_price == '100' }}>Under $100</option>
+      </select>
+
+      <!-- IN-STOCK TOGGLE -->
+      <label class="stock-filter-label">
+        <input type="checkbox" name="in_stock" value="1" onchange="this.form.submit()" {{ 'checked' if in_stock == '1' }}>
+        <span>In Stock Only</span>
+      </label>
+
+      <label for="sort-select">Sort:</label>
+      <select id="sort-select" name="sort" onchange="this.form.submit()">
+        <option value="newest" {{ 'selected' if sort == 'newest' or not sort }}>Newest Arrivals</option>
+        <option value="price_asc" {{ 'selected' if sort == 'price_asc' }}>Price: Low to High</option>
+        <option value="price_desc" {{ 'selected' if sort == 'price_desc' }}>Price: High to Low</option>
+        <option value="name_asc" {{ 'selected' if sort == 'name_asc' }}>Name: A to Z</option>
+      </select>
+    </form>
+    {% if q or active_cat or max_price or in_stock %}
+      <a href="{{ url_for('index') }}" class="clear-filters-btn">✕ Clear Filters</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- CATEGORY FILTER PILLS -->
 <div class="category-bar">
-  <a href="{{ url_for('index', q=q) }}" class="{{ 'active' if not active_cat }}">All</a>
+  <a href="{{ url_for('index', q=q, sort=sort) }}" class="cat-pill {{ 'active' if not active_cat }}">
+    <span>🏷️ All Categories</span>
+  </a>
   {% for c in categories %}
-    <a href="{{ url_for('index', category=c.slug, q=q) }}"
-       class="{{ 'active' if active_cat == c.slug }}">{{ c.name }}</a>
+    <a href="{{ url_for('index', category=c.slug, q=q, sort=sort) }}"
+       class="cat-pill {{ 'active' if active_cat == c.slug }}">
+      <span>
+        {% if c.slug == 'electronics' %}⚡{% elif c.slug == 'clothing' %}👕{% elif c.slug == 'books' %}📚{% elif c.slug == 'home' %}🏡{% else %}📦{% endif %}
+        {{ c.name }}
+      </span>
+    </a>
   {% endfor %}
 </div>
 
+<!-- PRODUCT GRID -->
 {% if products %}
   <div class="grid">
     {% for p in products %}
     <div class="card">
-      <a href="{{ url_for('product_detail', pid=p.id) }}">
-        <img src="{{ p.image_url }}" alt="{{ p.name }}">
-      </a>
-      <div class="card-body">
-        <h3><a href="{{ url_for('product_detail', pid=p.id) }}">{{ p.name }}</a></h3>
-        <p class="price">${{ '%.2f'|format(p.price) }}</p>
-        <p class="stock {{ 'out' if p.stock == 0 }}">
-          {{ 'Out of stock' if p.stock == 0 else p.stock ~ ' in stock' }}
-        </p>
-        <form action="{{ url_for('add_to_cart', pid=p.id) }}" method="post">
-          <button class="btn" {{ 'disabled' if p.stock == 0 }}>Add to Cart</button>
+      <div class="card-img-wrap">
+        <a href="{{ url_for('product_detail', pid=p.id) }}">
+          <img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy">
+        </a>
+        {% if p.category %}
+          <span class="card-cat-badge">{{ p.category.name }}</span>
+        {% endif %}
+        <span class="discount-badge">Save ~15%</span>
+
+        <!-- WISHLIST HEART BUTTON -->
+        <form action="{{ url_for('toggle_wishlist', pid=p.id) }}" method="post" class="wishlist-btn-form">
+          <button type="submit" class="card-wishlist-btn {{ 'active' if p.id in user_wishlist_ids else '' }}" title="Save to wishlist">
+            {{ '❤️' if p.id in user_wishlist_ids else '🤍' }}
+          </button>
         </form>
+
+        <!-- QUICK VIEW OVERLAY BUTTON -->
+        <button type="button" class="btn-quick-view" onclick='openQuickView({
+          id: {{ p.id }},
+          name: {{ p.name|tojson }},
+          price: {{ p.price }},
+          stock: {{ p.stock }},
+          imageUrl: {{ p.image_url|tojson }},
+          category: {{ (p.category.name if p.category else "")|tojson }},
+          desc: {{ (p.description or "")|tojson }},
+          rating: {{ p.rating }},
+          reviews: {{ p.review_count }}
+        })'>
+          👁️ Quick View
+        </button>
+      </div>
+
+      <div class="card-body">
+        <div class="card-meta">
+          <div class="rating-stars">
+            ★ <span class="rating-score">{{ p.rating }}</span>
+            <span class="review-count">({{ p.review_count }})</span>
+          </div>
+          {% if p.stock == 0 %}
+            <span class="stock-pill stock-out">Sold Out</span>
+          {% elif p.stock <= 5 %}
+            <span class="stock-pill stock-low">Only {{ p.stock }} left</span>
+          {% else %}
+            <span class="stock-pill stock-in">In Stock</span>
+          {% endif %}
+        </div>
+
+        <h3 class="card-title">
+          <a href="{{ url_for('product_detail', pid=p.id) }}">{{ p.name }}</a>
+        </h3>
+
+        <p class="card-desc">{{ p.description|truncate(85) }}</p>
+
+        <div class="card-price-row">
+          <div class="prices">
+            <span class="price-current">${{ '%.2f'|format(p.price) }}</span>
+            <span class="price-original">${{ '%.2f'|format(p.original_price) }}</span>
+          </div>
+        </div>
+
+        <div class="card-action">
+          {% if p.stock > 0 %}
+            <form action="{{ url_for('add_to_cart', pid=p.id) }}" method="post" class="w-100">
+              <input type="hidden" name="quantity" value="1">
+              <button class="btn btn-add-cart">
+                <span>🛒 Add to Cart</span>
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-disabled w-100" disabled>Out of Stock</button>
+          {% endif %}
+        </div>
       </div>
     </div>
     {% endfor %}
   </div>
 {% else %}
-  <p class="empty">No products found.</p>
+  <div class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No matching products found</h3>
+    <p>Try searching for a different keyword or explore our full catalog.</p>
+    <a href="{{ url_for('index') }}" class="btn">View All Products</a>
+  </div>
 {% endif %}
+
 {% endblock %}
