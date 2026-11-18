@@ -91,6 +91,11 @@ def index():
                            max_price=max_price, in_stock=in_stock)
 
 
+@app.route("/slides")
+def presentation_slides():
+    return render_template("presentation_slides.html")
+
+
 @app.route("/product/<int:pid>")
 def product_detail(pid):
     product = db.session.get(Product, pid) or abort(404)
